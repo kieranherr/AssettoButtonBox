@@ -1,73 +1,53 @@
-#include "Keyboard.h"
+// Simple example application that shows how to read four Arduino
+// digital pins and map them to the USB Joystick library.
+//
+// Ground digital pins 9, 10, 11, and 12 to press the joystick 
+// buttons 0, 1, 2, and 3.
+//
+// NOTE: This sketch file is for use with Arduino Leonardo and
+//       Arduino Micro only.
+//
+// by Matthew Heironimus
+// 2015-11-20
+//--------------------------------------------------------------------
 
-const int buttonPin[] = {2, 3, 4, 5, 6, 7, 8, 9};
-int buttonState[] = {0, 0, 0, 0, 0, 0, 0, 0};
-int prevButtonState[] = {HIGH, HIGH, HIGH, HIGH, HIGH, HIGH, HIGH};
-long lastDebounceTime[] = {0, 0, 0, 0, 0, 0, 0, 0};
-int pinCount = 8;
+#include <Joystick.h>
 
-long debounceDelay = 25;
+Joystick_ Joystick;
 
 void setup() {
-  for (int thisPin = pinCount - 1; thisPin >= 0; thisPin--){
-    pinMode(buttonPin, INPUT_PULLUP);
-  digitalWrite(buttonPin, HIGH);
-  }
-  Keyboard.begin();
+  // Initialize Button Pins
+  pinMode(2, INPUT_PULLUP);
+  pinMode(3, INPUT_PULLUP);
+  pinMode(4, INPUT_PULLUP);
+  pinMode(5, INPUT_PULLUP);
+  pinMode(6, INPUT_PULLUP);
+  pinMode(7, INPUT_PULLUP);
+  pinMode(8, INPUT_PULLUP);
+  pinMode(9, INPUT_PULLUP);
+
+  // Initialize Joystick Library
+  Joystick.begin();
 }
-int outputAction(int currentButton) {
-    if (currentButton == 1) {
-      Keyboard.press('8');
-      delay(200);
-      Keyboard.releaseAll();
-    }
-    if (currentButton + 1 == 2) {
-      Keyboard.press('7');
-      delay(200);
-      Keyboard.releaseAll();
-    }
-    if (currentButton + 2 == 3) {
-      Keyboard.press('6');
-      delay(200);
-      Keyboard.releaseAll();
-    }
-    if (currentButton + 3 == 4) {
-      Keyboard.press('5');
-      delay(200);
-      Keyboard.releaseAll();
-    }
-    if (currentButton + 4 == 5) {
-      Keyboard.press('4');
-      delay(200);
-      Keyboard.releaseAll();
-    }
-    if (currentButton + 5 == 6) {
-      Keyboard.press('3');
-      delay(200);
-      Keyboard.releaseAll();
-    }
-    if (currentButton + 6 == 7) {
-      Keyboard.press('2');
-      delay(200);
-      Keyboard.releaseAll();
-    }
-    if (currentButton + 7 == 8) {
-      Keyboard.press('1');
-      delay(200);
-      Keyboard.releaseAll();
-    }
-}
+
+// Constant that maps the phyical pin to the joystick button.
+const int pinToButtonMap = 2;
+
+// Last state of the button
+int lastButtonState[8] = {0,0,0,0,0,0,0,0};
+
 void loop() {
-   for (int thisPin = pinCount - 1; thisPin >= 0; thisPin--) {
-    buttonState[thisPin] = digitalRead(buttonPin[thisPin]);
 
-    if ((buttonState[thisPin] != prevButtonState[thisPin]) && (buttonState[thisPin] == HIGH)) {
-      if ((millis() - lastDebounceTime[thisPin]) > debounceDelay) {
-        outputAction(thisPin);
-        lastDebounceTime[thisPin] = millis();
-      }
+  // Read pin values
+  for (int index = 0; index < 8; index++)
+  {
+    int currentButtonState = !digitalRead(index + pinToButtonMap);
+    if (currentButtonState != lastButtonState[index])
+    {
+      Joystick.setButton(index, currentButtonState);
+      lastButtonState[index] = currentButtonState;
     }
-
-    prevButtonState[thisPin] = buttonState[thisPin];
   }
+
+  delay(50);
 }
